@@ -1,0 +1,129 @@
+/* Reset */
+/* Reset */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;       /* ✅ ลบ margin เริ่มต้น */
+  padding: 0;      /* ✅ ลบ padding เริ่มต้น */
+  font-family: sans-serif;
+}
+
+/* Header */
+.top-bar {
+  background: #0052cc;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 5vw;
+  width: 100%;      /* ✅ กว้างเต็มหน้าจอ */
+  position: relative;
+}
+
+.lang, .menu-icon {
+  padding: 0 1rem;
+}
+
+.menu-icon {
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Body */
+body {
+  margin: 0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Logo section */
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.logo-img {
+  width: 30vw;
+  height: auto;
+}
+
+.number-box {
+  margin-top: 0.5rem;
+  background-color: #1aa6ff;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 10px;
+}
+
+.system-name {
+  margin-top: 0.5rem;
+  font-size: 1.2rem;
+  color: #7f3fbf;
+}
+
+/* Title */
+.login-title {
+  margin-top: 2rem;
+  font-size: 2rem;
+  color: black;
+}
+
+/* Inputs */
+input[type="email"],
+input[type="password"] {
+  width: 90%;
+  max-width: 350px;
+  padding: 0.8rem;
+  margin: 1rem 0;
+  border-radius: 25px;
+  border: 1px solid #ccc;
+  background: #f2f2f2;
+  font-size: 1rem;
+}
+
+/* Options */
+.form-options {
+  width: 90%;
+  max-width: 350px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.forgot {
+  font-size: 0.9rem;
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* Buttons */
+.btn {
+  width: 90%;
+  max-width: 350px;
+  padding: 0.9rem;
+  font-size: 1rem;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem;
+}
+
+.login-btn {
+  background-color: #ff914d;
+  color: white;
+}
+
+.cancel-btn {
+  
+  color: #555;
+  font-size: 1rem;
+  text-decoration: none;
+}

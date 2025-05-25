@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RaPunSale - รายละเอียดสินค้า</title>
+  <link rel="stylesheet" href="CSS/index2.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="lang">🌐 TH | ไทย</div>
+  </header>
+
+  <!-- Main Product Section -->
+  <section class="product-detail">
+    <div class="product-image">
+      <img src="image/product3.png" alt="เตียง IDANÄS" />
+    </div>
+
+    <div class="product-info">
+      <h2 class="product-title">IDANÄS อิดาเนส</h2>
+      <p class="product-desc">ขนาดมาตรฐาน, สีดำ</p>
+      <p class="product-price">27,990 <span>บาท</span></p>
+      <p class="product-stock"><i class="fa fa-check"></i> มีสต็อก</p>
+      <p id="product-quantity"><i class="fa fa-cubes"></i> จำนวนในคลัง: <span>...</span></p>
+
+      <div class="product-action">
+        <div class="quantity-selector">
+          <input type="number" value="1" min="1" />
+        </div>
+        <button class="add-to-cart">Update Stock</button>
+      </div>
+
+      <button class="download-info">ดาวน์โหลดเอกสารสินค้า</button>
+    </div>
+  </section>
+
+  <script>
+    const productId = 'p001'; // สมมุติว่าใช้ ID นี้
+
+    async function fetchProductQuantity() {
+      try {
+        const res = await fetch(`/api/product/${productId}`);
+        const data = await res.json();
+        document.querySelector("#product-quantity span").textContent = data.quantity ?? 'ไม่พบ';
+      } catch (err) {
+        console.error("ไม่สามารถโหลดข้อมูลสินค้าได้", err);
+        document.querySelector("#product-quantity span").textContent = 'ไม่สามารถโหลดได้';
+      }
+    }
+
+    fetchProductQuantity();
+  </script>
+</body>
+</html>
