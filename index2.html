@@ -6,52 +6,169 @@
   <title>RaPunSale - รายละเอียดสินค้า</title>
   <link rel="stylesheet" href="CSS/index2.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+ 
+  </style>
 </head>
 <body>
+
   <!-- Top Bar -->
   <header class="top-bar">
     <div class="lang">🌐 TH | ไทย</div>
+    <div class="user-info" id="userInfo"></div>
   </header>
 
   <!-- Main Product Section -->
   <section class="product-detail">
     <div class="product-image">
-      <img src="image/product3.png" alt="เตียง IDANÄS" />
+      <img src="image/default.png" alt="กำลังโหลดรูป..." />
     </div>
 
     <div class="product-info">
-      <h2 class="product-title">IDANÄS อิดาเนส</h2>
-      <p class="product-desc">ขนาดมาตรฐาน, สีดำ</p>
-      <p class="product-price">27,990 <span>บาท</span></p>
-      <p class="product-stock"><i class="fa fa-check"></i> มีสต็อก</p>
+      <h2 class="product-title">กำลังโหลด...</h2>
+      <p class="product-desc">-</p>
+      <p class="product-price">- <span>บาท</span></p>
+      <p class="product-stock"><i class="fa fa-spinner"></i> กำลังโหลด</p>
       <p id="product-quantity"><i class="fa fa-cubes"></i> จำนวนในคลัง: <span>...</span></p>
 
       <div class="product-action">
         <div class="quantity-selector">
-          <input type="number" value="1" min="1" />
+          <input type="number" value="1" min="-100000" />
         </div>
-        <button class="add-to-cart">Update Stock</button>
+        <button class="update-stock" onclick="updateStock()">Update Stock</button>
       </div>
 
-      <button class="download-info">ดาวน์โหลดเอกสารสินค้า</button>
+      <button class="download-info" onclick="downloadSpec()">ดาวน์โหลดเอกสารสินค้า</button>
+      <button class="update-stock" onclick="window.location.href='index.html'">
+        <i class="fa fa-arrow-left"></i> กลับหน้าแรก
+      </button>
     </div>
   </section>
 
   <script>
-    const productId = 'p001'; // สมมุติว่าใช้ ID นี้
+    const apiUrl = "https://dg4t1cf76l.execute-api.us-east-1.amazonaws.com/get-products";
+    let productDocUrl = "";
 
-    async function fetchProductQuantity() {
-      try {
-        const res = await fetch(`/api/product/${productId}`);
-        const data = await res.json();
-        document.querySelector("#product-quantity span").textContent = data.quantity ?? 'ไม่พบ';
-      } catch (err) {
-        console.error("ไม่สามารถโหลดข้อมูลสินค้าได้", err);
-        document.querySelector("#product-quantity span").textContent = 'ไม่สามารถโหลดได้';
-      }
+    // ✅ ตรวจสอบ login และแสดงชื่อผู้ใช้
+    const name = localStorage.getItem("name");
+    const role = localStorage.getItem("role");
+
+    if (!name || !role) {
+      alert("กรุณาเข้าสู่ระบบก่อน");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("userInfo").innerHTML =
+        `<i class="fa fa-user-circle"></i> ${name} (${role})`;
     }
 
-    fetchProductQuantity();
+    function getProductIdFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("productId");
+    }
+
+    function fetchProductDetail() {
+      const productId = getProductIdFromURL();
+      if (!productId) {
+        alert("ไม่พบ productId ใน URL");
+        return;
+      }
+
+      fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+          const product = data.find(p => p.productId === productId);
+          if (!product) {
+            alert("ไม่พบข้อมูลสินค้าจาก API");
+            return;
+          }
+
+          productDocUrl = product.doc || "";
+          document.querySelector(".product-title").textContent = product.name;
+          document.querySelector(".product-desc").textContent = product.des || "ไม่มีคำอธิบายสินค้า";
+          document.querySelector(".product-price").innerHTML = `${product.price} <span>บาท</span>`;
+
+          const stockEl = document.querySelector(".product-stock");
+          if (product.stock <= 0) {
+            stockEl.innerHTML = `<i class="fa fa-times" style="color:red"></i> <span style="color:red">หมดสต็อก</span>`;
+          } else if (product.stock <= 3) {
+            stockEl.innerHTML = `<i class="fa fa-exclamation-triangle" style="color:red"></i> <span style="color:red">ใกล้หมดสต็อก</span>`;
+          } else {
+            stockEl.innerHTML = `<i class="fa fa-check" style="color:green"></i> <span style="color:green">มีสต็อก</span>`;
+          }
+
+          document.querySelector("#product-quantity span").textContent = product.stock;
+
+          const img = document.querySelector(".product-image img");
+          img.src = `${product.picture || product.productId + '.png'}`;
+          img.alt = product.name;
+        })
+        .catch(err => {
+          console.error("โหลดข้อมูลสินค้าไม่สำเร็จ:", err);
+          alert("เกิดข้อผิดพลาดในการโหลดสินค้า กรุณาลองใหม่ภายหลัง");
+        });
+    }
+
+    function updateStock() {
+  const productId = getProductIdFromURL();
+  const input = document.querySelector(".quantity-selector input");
+  const deltaStock = parseInt(input.value);
+
+  if (!productId || isNaN(deltaStock) || deltaStock === 0) {
+    alert("กรุณาใส่จำนวนที่ต้องการเพิ่มหรือลด (±)");
+    return;
+  }
+
+  // ✅ ดึง stock ล่าสุดก่อนอัปเดต
+  fetch(apiUrl)
+    .then(res => res.json())
+    .then(data => {
+      const product = data.find(p => p.productId === productId);
+      if (!product) {
+        alert("ไม่พบข้อมูลสินค้า");
+        return;
+      }
+
+      const currentStock = parseInt(product.stock);
+      const newStock = currentStock + deltaStock;
+
+      if (newStock < 0) {
+        alert(`ไม่สามารถอัปเดตได้: stock จะติดลบ (${newStock})`);
+        return;
+      }
+
+      // ✅ อัปเดตจริงเมื่อ newStock ถูกต้อง
+      fetch("https://dg4t1cf76l.execute-api.us-east-1.amazonaws.com/get-products", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, stock: deltaStock })
+      })
+        .then(res => res.json())
+        .then(() => {
+          alert("อัปเดต stock สำเร็จ!");
+          fetchProductDetail();
+        })
+        .catch(err => {
+          console.error("อัปเดตล้มเหลว:", err);
+          alert("เกิดปัญหาในการอัปเดตสินค้า");
+        });
+    })
+    .catch(err => {
+      console.error("ดึง stock ปัจจุบันล้มเหลว:", err);
+      alert("เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า");
+    });
+}
+
+
+    function downloadSpec() {
+      if (!productDocUrl) {
+        alert("ไม่พบเอกสารสินค้าสำหรับดาวน์โหลด");
+        return;
+      }
+      window.open(productDocUrl, "_blank");
+    }
+
+    document.addEventListener("DOMContentLoaded", fetchProductDetail);
   </script>
+
 </body>
 </html>

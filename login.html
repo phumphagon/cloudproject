@@ -21,13 +21,51 @@
 
   <!-- Login Form -->
   <h2 class="login-title">เข้าสู่ระบบ</h2>
-  <input type="email" placeholder="อีเมล" />
-  <input type="password" placeholder="รหัสผ่าน" />
+  <input type="email" id="email" placeholder="อีเมล" required />
+  <input type="password" id="password" placeholder="รหัสผ่าน" required />
+
   <div class="form-options">
     <a href="#" class="forgot">ลืมรหัสผ่าน</a>
   </div>
 
-  <button class="btn login-btn">เข้าสู่ระบบ</button>
-  <a href="#" class="cancel-btn">ยกเลิก</a>
+  <button class="btn login-btn" onclick="loginUser()">เข้าสู่ระบบ</button>
+  <a href="index.html" class="cancel-btn">ยกเลิก</a>
+
+  <!-- Script -->
+  <script>
+    function loginUser() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        alert("กรุณากรอกอีเมลและรหัสผ่าน");
+        return;
+      }
+
+      fetch("https://dg4t1cf76l.execute-api.us-east-1.amazonaws.com/login", { // 🔁 เปลี่ยนเป็น URL จริงของคุณ
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.role) {
+            localStorage.setItem("userId", data.userId);
+            localStorage.setItem("name", data.name);
+            localStorage.setItem("email", data.email);
+            localStorage.setItem("role", data.role);
+
+            alert("เข้าสู่ระบบสำเร็จในบทบาท: " + data.role);
+            window.location.href = "index.html";
+          } else {
+            alert(data.error || "เข้าสู่ระบบไม่สำเร็จ");
+          }
+        })
+        .catch(err => {
+          console.error("Login error:", err);
+          alert("เกิดข้อผิดพลาดขณะเข้าสู่ระบบ");
+        });
+    }
+  </script>
 </body>
 </html>

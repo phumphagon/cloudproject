@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RaPunSale - ติดตามสถานะ</title>
+  <link rel="stylesheet" href="CSS/index.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    .user-info {
+      color: white;
+      font-size: 0.95rem;
+      font-weight: bold;
+    }
+    .top-bar {
+      background: #0052cc;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+}
+    table {
+      width: 90%;
+      margin: auto;
+      border-collapse: collapse;
+      margin-top: 2vw;
+    }
+    th, td {
+      padding: 1vw;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .edit-btn {
+      padding: 0.5vw 1vw;
+      background-color: #ff914d;
+      border: none;
+      color: white;
+      border-radius: 0.5vw;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="lang">🌐 TH | ไทย</div>
+    <div class="user-info" id="userInfo">กำลังโหลด...</div>
+  </header>
+  <section class="top-section">
+    <div class="logo-area">
+      <img src="image/logo.png" alt="logo" class="logo-img" />
+      <h1>RaPunSale</h1>
+    </div>
+  </section>
+  <nav class="menu-bar">
+  <a href="index.html">สินค้า</a>
+  <a class="active">ติดตามสถานะ</a>
+  <a href="dashboard.html" id="dashboardLink" style="display: none;">Dashboard</a>
+</nav>
+
+  <!-- Section Title -->
+  <h2 style="padding-left: 5vw;">ติดตามสถานะลูกค้า</h2>
+
+  <!-- Tracking Table -->
+  <section class="tracking-section">
+    <table id="trackingTable">
+      <thead>
+        <tr>
+          <th>ลูกค้า</th>
+          <th>สินค้า</th>
+          <th>พนักงานดูแล</th>
+          <th>สถานะ</th>
+          <th>วัน เดือน ปี</th>
+          <th>รายละเอียด</th>
+        </tr>
+      </thead>
+      <tbody id="trackingBody">
+        <!-- JS จะเติมตรงนี้ -->
+      </tbody>
+    </table>
+  </section>
+
+  <script>
+    const apiUrl = "https://dg4t1cf76l.execute-api.us-east-1.amazonaws.com/tracking";
+
+   function fetchTrackingData() {
+  const currentUserId = localStorage.getItem("userId"); // 👈 user ที่ login
+  const isViewerOnly = currentUserId === "U003"; // 👈 กำหนดให้ U003 ดูได้ทุกแถวแต่ห้ามแก้ไข
+
+  fetch(apiUrl)
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.getElementById("trackingBody");
+      tbody.innerHTML = "";
+
+      const visibleData = isViewerOnly
+        ? data // U003 เห็นทุกข้อมูล
+        : data.filter(item => item.staffId === currentUserId); // คนอื่น filter ตาม staffId
+
+      if (visibleData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6">ไม่พบข้อมูลของคุณ</td></tr>`;
+        return;
+      }
+
+      visibleData.forEach(item => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td>${item.customerName}</td>
+          <td>${item.productName}</td>
+          <td>${item.staffId}</td>
+          <td class="status-cell">${item.status}</td>
+          <td class="date-cell">${item.reason || "-"}</td>
+          <td>
+            ${isViewerOnly 
+              ? `<span style="color:#aaa;">ดูเท่านั้น</span>`
+              : `<button class="edit-btn" onclick="toggleEdit(this, '${item.trackingId}', '${item.status}')">แก้ไข</button>`
+            }
+          </td>
+        `;
+
+        tbody.appendChild(row);
+      });
+    })
+    .catch(err => {
+      console.error("โหลดข้อมูลล้มเหลว:", err);
+      alert("เกิดข้อผิดพลาดในการโหลดข้อมูลลูกค้า");
+    });
+}
+
+
+    function toggleEdit(button, trackingId, currentStatus) {
+  const row = button.closest("tr");
+  const statusCell = row.querySelector(".status-cell");
+  const dateCell = row.querySelector(".date-cell");
+
+  if (button.textContent === "แก้ไข") {
+    statusCell.innerHTML = `
+      <select>
+        <option value="ยกเลิก" ${currentStatus === 'ยกเลิก' ? 'selected' : ''}>ยกเลิก</option>
+        <option value="รอลูกค้าตัดสินใจ" ${currentStatus === 'รอลูกค้าตัดสินใจ' ? 'selected' : ''}>รอลูกค้าตัดสินใจ</option>
+        <option value="ปิดการขาย" ${currentStatus === 'ปิดการขาย' ? 'selected' : ''}>ปิดการขาย</option>
+      </select>
+    `;
+    
+    button.textContent = "บันทึก";
+    button.style.backgroundColor = "#28a745"; // ✅ เขียวเมื่อเป็น "บันทึก"
+  } else {
+    const selectedValue = statusCell.querySelector("select").value;
+
+    const today = new Date().toLocaleDateString("th-TH", {
+      year: "numeric", month: "long", day: "numeric"
+    });
+
+    fetch(apiUrl, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        trackingId: trackingId,
+        status: selectedValue,
+        reason: today
+      })
+    })
+    .then(res => res.json())
+    .then(() => {
+      statusCell.textContent = selectedValue;
+      dateCell.textContent = today;
+      button.textContent = "แก้ไข";
+      button.style.backgroundColor = "#ff914d"; // ✅ กลับเป็นสีส้ม
+    })
+    .catch(err => {
+      console.error("อัปเดตไม่สำเร็จ:", err);
+      alert("เกิดปัญหาในการอัปเดตสถานะ");
+    });
+  }
+}
+
+
+    function showUserInfo() {
+  const name = localStorage.getItem("name");
+  const role = localStorage.getItem("role");
+  const userInfo = document.getElementById("userInfo");
+
+  if (!name || !role) {
+    alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
+    window.location.href = "login.html";
+    return;
+  }
+
+  userInfo.innerHTML = `
+  <i class="fa fa-user-circle"></i> ${name} (${role})
+  <a href="#" onclick="logout()" style="color: yellow; margin-left: 1vw;">ออกจากระบบ</a>`;
+
+  // ✅ แสดงปุ่ม Dashboard เฉพาะ admin
+  if (role === "admin") {
+    const dashboardLink = document.getElementById("dashboardLink");
+    if (dashboardLink) dashboardLink.style.display = "inline-block";
+  }
+ }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      showUserInfo();
+      fetchTrackingData();
+    });
+  </script>
+</body>
+</html>

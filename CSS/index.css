@@ -15,17 +15,15 @@ html, body {
 .top-bar {
   background: #0052cc;
   color: white;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 5vw;
-  width: 100%;
-  position: relative;
-  padding: 0 1.5vw;
 }
 
+
 .lang, .menu-icon {
-  font-size: 1vw;
+  font-size: 1.3vw;
 }
 
 .menu-icon {
@@ -49,7 +47,7 @@ html, body {
 }
 
 .logo-img {
-  width: 10vw;
+  width: 14vw;
   height: auto;
   border-radius: 50%;
   color: #BBBEE5;
@@ -97,7 +95,7 @@ html, body {
   text-decoration: none;
   color: #444;
   font-weight: 500;
-  font-size: 1.1vw;
+  font-size: 1.4vw;
   position: relative;
   cursor: pointer;
 }
@@ -107,33 +105,36 @@ html, body {
   border-bottom: 0.3vw solid orange;
 }
 
-/* แถวสินค้าแนะนำ */
-.product-row {
+/* สินค้า */
+.product-container {
   display: flex;
-  gap: 2vw;
-  overflow-x: auto;
-  padding: 2vw 4vw;
-  scroll-behavior: smooth;
+  flex-wrap: wrap;
+  gap: 1.6vw;
+  padding: 1vw;
+  justify-content: flex-start;
 }
 
 .product-card {
-  width: 15vw;
-  min-width: 8vw;
-  background: #fff;
-  box-shadow: 0 0.3vw 0.8vw rgba(0, 0, 0, 0.08);
+  width: 22vw;
+  border: 0.1vw solid #ccc;
+  padding: 1.2vw;
   border-radius: 1vw;
-  padding: 1vw;
-  position: relative;
-  text-align: center;
-  flex-shrink: 0;
+  box-shadow: 0 0 0.6vw rgba(0,0,0,0.1);
+  background: #fff;
 }
 
 .product-card img {
   width: 100%;
-  object-fit: contain;
-  border-radius: 0.5vw;
-  margin-bottom: 1vw;
+  height: auto;
+  border-radius: 0.6vw;
+}
 
+.product-info {
+  margin-top: 0.8vw;
+}
+
+.product-info p {
+  margin: 0.4vw 0;
 }
 
 .update-btn {
@@ -151,6 +152,14 @@ html, body {
 
 .update-btn:hover {
   background-color: #e26f2e;
+}
+
+.product-card.low-stock {
+  border: 2px solid #ff5900;
+}
+
+.product-card.out-of-stock {
+  border: 2px solid red;
 }
 
 .product-info .name {
@@ -176,8 +185,7 @@ html, body {
   color: #333;
 }
 
-
-
+/* Responsive Grid */
 .grid {
   display: flex;
   flex-wrap: wrap;
@@ -208,7 +216,71 @@ html, body {
   color: #000;
 }
 
-/* Responsive: จอมือถือ */
+/* Tracking Table Section */
+.tracking-section {
+  padding: 2vw 5vw;
+  max-width: 90vw;
+  margin: 0 auto;
+}
+
+#trackingTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1vw;
+  background: #fff;
+  box-shadow: 0 0 0.5vw rgba(0,0,0,0.1);
+}
+
+#trackingTable thead {
+  background-color: #f2f2f2;
+}
+
+#trackingTable th, #trackingTable td {
+  border: 0.05vw solid #ccc;
+  padding: 0.8vw 1vw;
+  text-align: left;
+}
+
+#trackingTable tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+#trackingTable tbody tr:hover {
+  background-color: #f0f8ff;
+}
+
+.status[data-status="ปิดการขาย"] {
+  color: green;
+  font-weight: bold;
+}
+
+.status[data-status="รอลูกค้าตัดสินใจ"] {
+  color: orange;
+  font-weight: bold;
+}
+
+.status[data-status="ยกเลิก"] {
+  color: red;
+  font-weight: bold;
+}
+
+.details-btn {
+  background-color: #5736B9;
+  color: white;
+  padding: 0.5vw 1vw;
+  border: none;
+  border-radius: 0.5vw;
+  cursor: pointer;
+}
+
+.user-info {
+      color: white;
+      font-size: 0.95rem;
+      font-weight: bold;
+    }
+
+
+/* Responsive */
 @media (max-width: 768px) {
   .logo-area h1,
   .menu-bar a,

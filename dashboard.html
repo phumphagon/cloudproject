@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - RaPunSale</title>
+  <link rel="stylesheet" href="CSS/dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <header class="top-bar">
+    <div class="lang">🌐 TH | ไทย</div>
+    <div class="user-info" id="userInfo"></div>
+  </header>
+
+  <!-- ✅ ปุ่มกลับหน้า index -->
+  <button class="back-button" onclick="window.location.href='index.html'">
+    <i class="fa fa-arrow-left"></i> กลับหน้าแรก
+  </button>
+
+  <section class="dashboard">
+    <h1 id="dashboardTitle">Dashboard สรุปข้อมูล</h1>
+
+    <div class="summary-cards">
+      <div class="card">
+        <h3>จำนวนสินค้าทั้งหมด</h3>
+        <p id="totalProducts">-</p>
+      </div>
+      <div class="card">
+        <h3>จำนวนรวม stock</h3>
+        <p id="totalStock">-</p>
+      </div>
+      <div class="card">
+        <h3>สินค้าใกล้หมด (≤ 3)</h3>
+        <p id="lowStock">-</p>
+      </div>
+    </div>
+
+    <div class="chart-container" id="chartSection">
+      <h2>กราฟจำนวน stock ต่อสินค้า</h2>
+      <canvas id="stockChart" width="600" height="300"></canvas>
+    </div>
+  </section>
+
+  <script>
+    const apiUrl = "https://dg4t1cf76l.execute-api.us-east-1.amazonaws.com/get-products";
+    const role = localStorage.getItem("role");
+    const currentUserId = localStorage.getItem("userId");
+    const name = localStorage.getItem("name");
+
+    if (!role || !currentUserId || !name) {
+      alert("กรุณาเข้าสู่ระบบก่อนเข้าดู Dashboard");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("userInfo").innerHTML =
+        `<i class="fa fa-user-circle"></i> ${name} (${role})`;
+    }
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch(apiUrl);
+        let data = await res.json();
+
+        if (role !== "admin") {
+          data = data.filter(item => item.staffId === currentUserId);
+          document.getElementById("chartSection").style.display = "none";
+        }
+
+        document.getElementById("totalProducts").textContent = data.length;
+        document.getElementById("totalStock").textContent = data.reduce((sum, item) => sum + parseInt(item.stock), 0);
+        document.getElementById("lowStock").textContent = data.filter(item => item.stock <= 3).length;
+
+        document.getElementById("dashboardTitle").textContent += role === "admin" ? " (ผู้บริหาร)" : " (พนักงาน)";
+
+        if (role === "admin") {
+          const labels = data.map(item => item.name);
+          const stocks = data.map(item => item.stock);
+          const ctx = document.getElementById("stockChart").getContext("2d");
+
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'จำนวน stock',
+                data: stocks,
+                backgroundColor: '#36a2eb'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                title: { display: false }
+              }
+            }
+          });
+        }
+
+      } catch (err) {
+        console.error("โหลดข้อมูล dashboard ล้มเหลว:", err);
+        alert("เกิดข้อผิดพลาดในการโหลด Dashboard");
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadDashboard);
+  </script>
+
+</body>
+</html>

@@ -13,25 +13,33 @@ html, body {
 .top-bar {
   background: #0052cc;
   color: white;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 5vw;
-  width: 100%;
-  position: relative;
-  padding: 0 1.5vw;
-  font-size: 1vw;
 }
+
+.lang, .menu-icon {
+  font-size: 1.3vw;
+}
+
+
+   .user-info {
+      font-size: 0.95rem;
+      font-weight: bold;
+      margin-right: 1vw;
+    }
+    
 
 .product-detail {
   display: flex;
-  gap: 5vw;
+  gap: 15vw;
   padding: 2vw 4vw;
   flex-wrap: wrap;
 }
 
 .product-image img {
-  width: 30vw;
+  width: 35vw;
   height: auto;
   border-radius: 1vw;
 }
@@ -73,6 +81,7 @@ html, body {
   color: green;
   font-weight: bold;
 }
+
 
 .select-options label {
   font-weight: bold;
@@ -126,7 +135,7 @@ html, body {
   font-size: 1vw;
 }
 
-.add-to-cart {
+.update-stock {
   background: orange;
   color: white;
   border: none;

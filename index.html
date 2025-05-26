@@ -12,7 +12,7 @@
   <!-- Top Bar -->
   <header class="top-bar">
     <div class="lang">🌐 TH | ไทย</div>
-
+    <div class="user-info" id="userInfo">กำลังโหลด...</div>
   </header>
 
   <!-- Logo + Search -->
@@ -22,46 +22,120 @@
       <h1>RaPunSale</h1>
     </div>
     <div class="search-box">
-      <input type="text" placeholder="ค้นหาสินค้าอะไรดี..." />
+      <input type="text" id="searchInput" placeholder="กรองสินค้า..." oninput="filterProducts()" />
       <button><i class="fas fa-search"></i></button>
     </div>
   </section>
 
   <!-- หมวดหมู่ -->
-  <nav class="menu-bar">
-    <a class="active">สินค้า</a>
-    <a>ติดตามสถานะ</a>
-  </nav>
-
-  <!-- สินค้าแนะนำแนวนอน -->
-  <section class="product-row">
-
-  <!-- Product 1 -->
-  <div class="product-card">
-    <img src="image/product1.png" alt="product1" />
-    <div class="product-info">
-      <p class="name">LIXHULT ลิกชุลท์</p>
-      <p class="desc">ตู้, โลหะ/สีแอนทราไซต์</p>
-      <p class="price">690 <span>บาท</span></p>
-    </div>
-    <button class="update-btn">Update สินค้า</button>
-  </div>
-
-  <!-- Product 2 -->
-  <div class="product-card">
-    <img src="image/product2.png" alt="product2" />
-    <div class="product-info">
-      <p class="name">MALM โต๊ะไม้</p>
-      <p class="desc">โต๊ะทำงาน, สีไม้อ่อน</p>
-      <p class="price">1,290 <span>บาท</span></p>
-    </div>
-     <button class="update-btn">Update สินค้า</button>
-  </div>
-
-</section>
+<nav class="menu-bar">
+  <a class="active">สินค้า</a>
+  <a href="customertracking.html">ติดตามสถานะ</a>
+  <a href="dashboard.html" id="dashboardLink" style="display: none;">Dashboard</a>
+</nav>
 
 
-  
+  <!-- รายการสินค้าแบบการ์ด -->
+  <section class="product-container" id="productContainer">
+    <!-- การ์ดสินค้าแสดงตรงนี้ -->
+  </section>
+
+  <script>
+    const apiUrl = "https://dg4t1cf76l.execute-api.us-east-1.amazonaws.com/get-products";
+    let allProducts = [];
+
+    function fetchProducts() {
+      fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+          allProducts = data;
+          displayProducts(data);
+        })
+        .catch(err => {
+          console.error("โหลดสินค้าล้มเหลว:", err);
+        });
+    }
+
+    function displayProducts(products) {
+      const container = document.getElementById("productContainer");
+      container.innerHTML = "";
+
+      products.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+
+        if (item.stock <= 0) {
+          card.classList.add("out-of-stock");
+        } else if (item.stock <= 3) {
+          card.classList.add("low-stock");
+        }
+
+        let stockStatus = "";
+        if (item.stock <= 0) {
+          stockStatus = `<i class="fa fa-times" style="color:red"></i> <span style="color:red">หมดสต็อก: ${item.stock}</span>`;
+        } else if (item.stock <= 3) {
+          stockStatus = `<i class="fa fa-exclamation-triangle" style="color:#ff5900"></i> <span style="color:#ff5900">ใกล้หมดสต็อก: ${item.stock}</span>`;
+        } else {
+          stockStatus = `<i class="fa fa-check" style="color:green"></i> <span style="color:green">มีสต็อก: ${item.stock}</span>`;
+        }
+
+        card.innerHTML = `
+          <img src="${item.picture}" alt="${item.name}" />
+          <div class="product-info">
+            <p class="name">${item.name}</p>
+            <p class="stock">${stockStatus}</p>
+            <p class="price">${item.price} <span>บาท</span></p>
+          </div>
+          <button class="update-btn" onclick="editProduct('${item.productId}')">Update สินค้า</button>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function filterProducts() {
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = allProducts.filter(p => p.name.toLowerCase().includes(keyword));
+      displayProducts(filtered);
+    }
+
+    function editProduct(id) {
+      window.location.href = `index2.html?productId=${id}`;
+    }
+
+   function showUser() {
+  const name = localStorage.getItem("name");
+  const role = localStorage.getItem("role");
+  const userInfo = document.getElementById("userInfo");
+
+  if (!name || !role) {
+    alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
+    window.location.href = "login.html";
+    return;
+  }
+
+  userInfo.innerHTML = `
+  <i class="fa fa-user-circle"></i> ${name} (${role})
+  <a href="#" onclick="logout()" style="color: yellow; margin-left: 1vw;">ออกจากระบบ</a>`;
+
+  // ✅ แสดงปุ่ม Dashboard เฉพาะ admin
+  if (role === "admin") {
+    const dashboardLink = document.getElementById("dashboardLink");
+    if (dashboardLink) dashboardLink.style.display = "inline-block";
+  }
+ }
+
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      showUser();
+      fetchProducts();
+    });
+  </script>
 
 </body>
 </html>
